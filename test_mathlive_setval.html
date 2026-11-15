@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="./android/app/src/main/assets/mathlive/mathlive.min.js"></script>
+</head>
+<body>
+  <div id="output"></div>
+  <math-field id="mf" math-virtual-keyboard-policy="manual" read-only></math-field>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const mf = document.getElementById('mf');
+      const out = document.getElementById('output');
+      
+      mf.setValue('19856646 - 9');
+      const val1 = mf.getValue();
+      const ascii1 = mf.getValue('ascii-math');
+      
+      out.textContent = 'VAL1:' + val1 + ' | ASCII1:' + ascii1;
+    });
+  </script>
+</body>
+</html>

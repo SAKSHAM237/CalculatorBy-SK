@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="./android/app/src/main/assets/mathlive/mathlive.min.js"></script>
+</head>
+<body>
+  <div id="output"></div>
+  <math-field id="mf1" math-virtual-keyboard-policy="manual" read-only></math-field>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const mf1 = document.getElementById('mf1');
+      const out = document.getElementById('output');
+      
+      try {
+        mf1.executeCommand(['insert', '5', { mode: 'math' }]);
+      } catch(e) {}
+      
+      const v_insert = mf1.value;
+      
+      mf1.setValue('1+2');
+      const v_set = mf1.value;
+      
+      out.textContent = 'AFTER_INSERT:' + v_insert + ' AFTER_SET:' + v_set;
+    });
+  </script>
+</body>
+</html>

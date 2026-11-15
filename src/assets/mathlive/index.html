@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="./mathlive-static.css">
+  <script src="./mathlive.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    math-field {
+      width: 100%;
+      font-size: 34px;
+      color: #FFFFFF;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 6px 12px;
+      text-align: right;
+    }
+    math-field::part(virtual-keyboard-toggle) {
+      display: none !important;
+    }
+    math-field:focus-within {
+      outline: none;
+      border: none;
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <math-field id="mf" virtual-keyboard-mode="manual"></math-field>
+  <script>
+    const mf = document.getElementById('mf');
+
+    function notifyChange() {
+      if (!window.ReactNativeWebView || !mf) return;
+      try {
+        const asciiMath = mf.getValue('ascii-math') || '';
+        const latex = mf.getValue('latex') || '';
+        let mathJson = null;
+        try {
+          mathJson = mf.getValue('math-json');
+        } catch (e) {}
+
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'EXPRESSION_CHANGE',
+          asciiMath: asciiMath,
+          latex: latex,
+          mathJson: mathJson
+        }));
+      } catch (err) {
+        console.error('notifyChange error', err);
+      }
+    }
+
+    if (mf) {
+      mf.addEventListener('input', notifyChange);
+    }
+
+    window.executeMathCommand = function(cmd, arg) {
+      if (!mf) return;
+      if (cmd === 'insert') {
+        mf.executeCommand(['insert', arg, { mode: 'math' }]);
+      } else if (cmd === 'deleteBackward') {
+        mf.executeCommand('deleteBackward');
+      } else if (cmd === 'deleteAll') {
+        mf.setValue('');
+      } else if (cmd === 'setValue') {
+        mf.setValue(arg || '');
+      } else if (cmd === 'moveToPreviousChar') {
+        mf.executeCommand('moveToPreviousChar');
+      } else if (cmd === 'moveToNextChar') {
+        mf.executeCommand('moveToNextChar');
+      }
+      notifyChange();
+    };
+
+    window.addEventListener('message', function(event) {
+      try {
+        const data = JSON.parse(event.data);
+        if (data && data.type === 'COMMAND') {
+          window.executeMathCommand(data.command, data.arg);
+        }
+      } catch (err) {
+        console.error('message parse error', err);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'READY' }));
+      }
+    });
+  </script>
+</body>
+</html>
